@@ -1,6 +1,12 @@
 #include <SPI.h>
 #include <LoRa.h>
 
+union float2uint8_t {
+  float fVal;
+  unsigned char buf[4];
+};
+
+float2uint8_t my_float2uint8_t;
 float Temperature = 0;
 int32_t Pressure = 0;
 float Altitude = 0;
@@ -30,10 +36,26 @@ void loop()
   if (packetSize)
   {
     // received a packet
-    Serial.print("Received packet '");    
-    Temperature = LoRa.read();
-    Pressure = LoRa.read();
-    Altitude = LoRa.read();
+    Serial.print("Received packet '");
+    //    Temperature = LoRa.read();
+    my_float2uint8_t.buf[0] = LoRa.read();
+    my_float2uint8_t.buf[1] = LoRa.read();
+    my_float2uint8_t.buf[2] = LoRa.read();
+    my_float2uint8_t.buf[3] = LoRa.read();
+    Temperature = my_float2uint8_t.fVal;
+    //    Pressure = LoRa.read();
+    my_float2uint8_t.buf[0] = LoRa.read();
+    my_float2uint8_t.buf[1] = LoRa.read();
+    my_float2uint8_t.buf[2] = LoRa.read();
+    my_float2uint8_t.buf[3] = LoRa.read();
+    Pressure = my_float2uint8_t.fVal;
+
+    //    Altitude = LoRa.read();
+    my_float2uint8_t.buf[0] = LoRa.read();
+    my_float2uint8_t.buf[1] = LoRa.read();
+    my_float2uint8_t.buf[2] = LoRa.read();
+    my_float2uint8_t.buf[3] = LoRa.read();
+    Altitude = my_float2uint8_t.fVal;
     counter = LoRa.read();
 
     Serial.print("Temperature = ");
