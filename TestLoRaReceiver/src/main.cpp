@@ -11,6 +11,7 @@ float Temperature = 0;
 int32_t Pressure = 0;
 float Altitude = 0;
 int counter = 0;
+int voltage = 0;
 int prev_counter = 0;
 
 void setup()
@@ -56,6 +57,13 @@ void loop()
     my_float2uint8_t.buf[2] = LoRa.read();
     my_float2uint8_t.buf[3] = LoRa.read();
     Altitude = my_float2uint8_t.fVal;
+
+    my_float2uint8_t.buf[0] = LoRa.read();
+    my_float2uint8_t.buf[1] = LoRa.read();
+    my_float2uint8_t.buf[2] = LoRa.read();
+    my_float2uint8_t.buf[3] = LoRa.read();
+    voltage = my_float2uint8_t.fVal;
+
     counter = LoRa.read();
 
     Serial.print("Temperature = ");
@@ -71,6 +79,10 @@ void loop()
     Serial.print("Altitude = ");
     Serial.print(Altitude);
     Serial.println(" meters");
+
+    Serial.print("VOLTAGE = ");
+    Serial.print(voltage);
+    Serial.println(" V");
 
     // print RSSI of packet
     Serial.print("' with RSSI ");

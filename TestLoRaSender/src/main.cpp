@@ -13,8 +13,13 @@ float Temperature = 0;
 int32_t Pressure = 0;
 float Altitude = 0;
 int counter = 0;
+int voltage = 0;
+int min_voltage = 1023;
+int max_voltage = 0;
 
 Adafruit_BMP085 bmp;
+
+int PIN_VOLT = A2;
 
 void setup()
 {
@@ -40,6 +45,7 @@ void setup()
     {
     }
   }
+  pinMode(PIN_VOLT, INPUT);
 }
 
 void loop()
@@ -47,7 +53,8 @@ void loop()
   Temperature = bmp.readTemperature();
   Pressure = bmp.readPressure();
   Altitude = bmp.readAltitude();
-
+  voltage = analogRead(PIN_VOLT);
+  
   Serial.print("Sending packet: ");
   Serial.println(counter);
 
@@ -62,6 +69,10 @@ void loop()
   Serial.print("Altitude = ");
   Serial.print(Altitude);
   Serial.println(" meters");
+
+  Serial.print("VOLTAGE = ");
+  Serial.print(voltage);
+  Serial.println(" V");
   Serial.println();
 
   LoRa.beginPacket();  
@@ -84,8 +95,14 @@ void loop()
   LoRa.write(my_float2uint8_t.buf[2]);
   LoRa.write(my_float2uint8_t.buf[3]);
 
+  my_float2uint8_t.fVal = voltage;
+  LoRa.write(my_float2uint8_t.buf[0]);
+  LoRa.write(my_float2uint8_t.buf[1]);
+  LoRa.write(my_float2uint8_t.buf[2]);
+  LoRa.write(my_float2uint8_t.buf[3]);
+
   LoRa.write(counter);
   LoRa.endPacket();
   counter++;
-  delay(5000);
+  delay(1000);
 }
