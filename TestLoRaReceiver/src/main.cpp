@@ -1,3 +1,24 @@
+/* Схема подключения
+---------------------
+LORA    - NANO
+---------------------
+MISO          - D12
+SCK           - D13
+RST           - D9
+GND           - GND
+DIO0          - D2
+MOSI          - D11
+NSS           - D10
+V3.3          - 3V
+---------------------
+OLED SSD1306  - NANO
+---------------------
+GND           - GND
+VCC           - 5V/3V
+SCL           - A5 <-|
+|                    | - I2C
+SDA           - A4 <-|
+*/
 #include <SPI.h>
 #include <LoRa.h>
 #include <Wire.h>

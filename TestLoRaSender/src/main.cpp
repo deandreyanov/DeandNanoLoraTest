@@ -1,3 +1,24 @@
+/* Схема подключения
+---------------------
+LORA    - NANO
+---------------------
+MISO          - D12
+SCK           - D13
+RST           - D9
+GND           - GND
+DIO0          - D2
+MOSI          - D11
+NSS           - D10
+V3.3          - 3V
+---------------------
+BMP180        - NANO
+---------------------
+GND           - GND
+VIN           - 5V/3V
+SCL           - A5 <-|
+|                    | - I2C
+SDA           - A4 <-|
+*/
 #include <Adafruit_BMP085.h>
 #include <LoRa.h>
 #include <SPI.h>
@@ -12,7 +33,6 @@ uint32_t  :4
 int64_t   :8
 uint64_t  :8
 */
-
 union float2uint8_t {
   float fVal;
   unsigned char buf[4];
