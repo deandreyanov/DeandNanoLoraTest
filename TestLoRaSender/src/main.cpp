@@ -23,6 +23,7 @@ SDA           - A4 <-|
 #include <LoRa.h>
 #include <SPI.h>
 #include <Wire.h>
+#include <GyverPower.h>
 /*
 int8_t    :1
 uint8_t   :1
@@ -81,6 +82,10 @@ void setup()
     }
   }
   pinMode(PIN_VOLT, INPUT);
+
+  autoCalibrate(); // автоматическая калибровка ~ 2 секунды , средняя но достаточная точность
+
+  hardwareDisable(PWR_ALL);
 }
 
 void serial_print_values()
@@ -148,10 +153,10 @@ void lora_send()
 
 void loop()
 {
-  if (millis() - last_time_send >= SEND_PERIOD)
+/*  if (millis() - last_time_send >= SEND_PERIOD)
   {
     last_time_send = millis();
-
+*/
     Temperature = bmp.readTemperature();
     Pressure = bmp.readPressure();
     Altitude = bmp.readAltitude();
@@ -162,5 +167,6 @@ void loop()
     lora_send();
 
     counter++;
-  }
+  //}
+  sleepDelay(5000);
 }
