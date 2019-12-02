@@ -19,6 +19,15 @@ SCL           - A5 <-|
 |                    | - I2C
 SDA           - A4 <-|
 */
+/*
+Структура пакета:
+  Temperature
+  Pressure
+  Altitude
+  voltage
+  counter
+  time
+*/
 #include <Adafruit_BMP085.h>
 #include <LoRa.h>
 #include <SPI.h>
@@ -34,6 +43,16 @@ uint32_t  :4
 int64_t   :8
 uint64_t  :8
 */
+
+const long MILLISEC_PER_SEC = 1000;
+const long SEC_PER_MIN = 60;
+const long MIN_PER_HOUR = 60;
+const long HOUR_PER_DAY = 24;
+
+const long MILLISEC_PER_MIN = MILLISEC_PER_SEC * SEC_PER_MIN;
+const long MILLISEC_PER_HOUR = MILLISEC_PER_MIN * MIN_PER_HOUR;
+const long MILLISEC_PER_DAY = MILLISEC_PER_HOUR * HOUR_PER_DAY;
+
 union float2uint8_t {
   float fVal;
   unsigned char buf[4];
@@ -44,13 +63,14 @@ float Temperature = 0;
 int32_t Pressure = 0;
 float Altitude = 0;
 int counter = 0;
-int adc_voltage = 0; // отсчёты с аналогового входа
+int adc_voltage = 0;    // отсчёты с аналогового входа
 float c_voltage = 4.14; // коэффициент для пересчёта в напряжение
-float voltage = 0; // напряжение в вольтах
+float voltage = 0;      // напряжение в вольтах
 int min_voltage = 1023;
 int max_voltage = 0;
+long my_time = 0;
 
-uint32_t last_time_send;
+uint32_t last_time_send = 0;
 uint32_t SEND_PERIOD = 5000;
 
 Adafruit_BMP085 bmp;
@@ -85,11 +105,34 @@ void setup()
 
   autoCalibrate(); // автоматическая калибровка ~ 2 секунды , средняя но достаточная точность
 
-  hardwareDisable(PWR_ALL);
+  //hardwareDisable(PWR_ALL);
 }
 
+void serial_print_time(long t_time)
+{
+  Serial.print("Time = ");
+  Serial.print(t_time);
+  Serial.println(" ms");
+  Serial.print("Time = ");
+  byte days = byte(t_time / MILLISEC_PER_DAY);
+  t_time %= MILLISEC_PER_DAY;
+  byte hours = byte(t_time / MILLISEC_PER_HOUR);
+  t_time %= MILLISEC_PER_HOUR;
+  byte minutes = byte(t_time / MILLISEC_PER_MIN);
+  t_time %= MILLISEC_PER_MIN;
+  byte seconds = byte(t_time / MILLISEC_PER_SEC);
+  Serial.print(days);
+  Serial.print(" ");
+  Serial.print(hours);
+  Serial.print(":");
+  Serial.print(minutes);
+  Serial.print(":");
+  Serial.print(seconds);
+  Serial.println();
+}
 void serial_print_values()
 {
+  /*
   Serial.print("Sending packet: ");
   Serial.println(counter);
 
@@ -111,11 +154,15 @@ void serial_print_values()
   
   Serial.print("VOLTAGE = ");
   Serial.print(voltage);
-  Serial.println(" V");  
+  Serial.println(" V");
+  */
+
+  serial_print_time(my_time);
 }
 
 void lora_send()
 {
+  counter++;
   LoRa.beginPacket();
   //  LoRa.write(Temperature);
   my_float2uint8_t.fVal = Temperature;
@@ -147,26 +194,31 @@ void lora_send()
   LoRa.write(my_float2uint8_t.buf[1]);
   LoRa.write(my_float2uint8_t.buf[2]);
   LoRa.write(my_float2uint8_t.buf[3]);
+  //  LoRa.write(my_time);
+  my_float2uint8_t.fVal = millis();
+  LoRa.write(my_float2uint8_t.buf[0]);
+  LoRa.write(my_float2uint8_t.buf[1]);
+  LoRa.write(my_float2uint8_t.buf[2]);
+  LoRa.write(my_float2uint8_t.buf[3]);
 
   LoRa.endPacket();
 }
 
 void loop()
 {
-/*  if (millis() - last_time_send >= SEND_PERIOD)
-  {
-    last_time_send = millis();
-*/
-    Temperature = bmp.readTemperature();
-    Pressure = bmp.readPressure();
-    Altitude = bmp.readAltitude();
-    adc_voltage = analogRead(PIN_VOLT);
-    voltage = c_voltage * adc_voltage;
+  //my_time = millis();
+  //if (my_time - last_time_send >= SEND_PERIOD)
+  //{
+  last_time_send = millis();
 
-    serial_print_values();
-    lora_send();
+  Temperature = bmp.readTemperature();
+  Pressure = bmp.readPressure();
+  Altitude = bmp.readAltitude();
+  adc_voltage = analogRead(PIN_VOLT);
+  voltage = c_voltage * adc_voltage;
 
-    counter++;
+  serial_print_values();
+  lora_send();
   //}
-  sleepDelay(5000);
+  sleepDelay(SEND_PERIOD);
 }
