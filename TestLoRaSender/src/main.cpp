@@ -62,7 +62,7 @@ float2uint8_t my_float2uint8_t;
 float Temperature = 0;
 int32_t Pressure = 0;
 float Altitude = 0;
-int counter = 0;
+long counter = 0;
 int adc_voltage = 0;    // отсчёты с аналогового входа
 float c_voltage = 4.14; // коэффициент для пересчёта в напряжение
 float voltage = 0;      // напряжение в вольтах
